@@ -55,8 +55,9 @@ function fileremote_field_widget_form(&$form, &$form_state, $field, $instance, $
 
   $widget['#delta'] = $delta;
   $widget += array(
-    '#type' => 'textfield',
-    '#default_value' => $value,
+    '#type' => 'hidden',
+    '#prefix' => '<div class="FILEREMOTE-WRAPPER">',
+    '#suffix' => '</div>',
   );
 
 
