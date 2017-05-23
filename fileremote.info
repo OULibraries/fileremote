@@ -1,0 +1,4 @@
+name = FileRemote
+description = Remote Files (Dropbox)
+package = Fields
+core = 7.x

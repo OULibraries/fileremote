@@ -1,0 +1,31 @@
+<?php
+/**
+ * @file
+ */
+
+
+/**
+ * Implements hook_field_schema
+ *
+ */
+
+function fileremote_field_schema($field) {
+
+
+  $columns = array(
+    'filename' => array(
+      'type' => 'varchar',
+      'length' => 1024,
+      'not null' => FALSE),
+  );
+  $indexes = array(
+    'filename' => array('filename'),
+  );
+
+
+  $schema = array(
+    'columns' => $columns,
+    'indexes' => $indexes,
+  );
+  return $schema;
+}
