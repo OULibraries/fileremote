@@ -56,8 +56,9 @@ function fileremote_field_widget_form(&$form, &$form_state, $field, $instance, $
   $widget['#delta'] = $delta;
   $widget += array(
     '#type' => 'hidden',
-    '#prefix' => '<div class="FILEREMOTE-WRAPPER">',
+    '#prefix' => '<div class="FILEREMOTE-WRAPPER"> <h1>Yep!</h1>',
     '#suffix' => '</div>',
+    '#theme' => 'fileremote',
   );
 
 
@@ -65,6 +66,17 @@ function fileremote_field_widget_form(&$form, &$form_state, $field, $instance, $
   $element['filename'] = $widget;
   return $element;
 }
+
+
+function theme_fileremote_upload_widget($variables) {
+
+  return "<h1> figured out how to theme a widget</h1>";
+
+
+
+}
+
+
 
 
 

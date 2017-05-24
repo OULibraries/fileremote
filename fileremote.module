@@ -5,3 +5,18 @@
 
 
 require_once dirname(__FILE__) . '/fileremote.field.inc';
+
+
+/**
+ * Implementation of hook_theme().
+ */
+function fileremote_theme() {
+  $path = drupal_get_path('module', 'fileremote');
+  $themes = array();
+  $themes['fileremote'] = array(
+    'render element' => 'element',
+    'template' => 'fileremote_upload_widget',
+    'path' => $path . '/templates',
+  );
+  return $themes;
+}
