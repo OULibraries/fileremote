@@ -20,3 +20,30 @@ function fileremote_theme() {
   );
   return $themes;
 }
+
+
+/**
+ * Implements hook_libraries_info().
+ */
+
+function fileremote_libraries_info() {
+
+  $libraries['fine-uploader'] = array(
+    'name' => 'Fine Uploader',
+    'vendor url' => 'https://fineuploader.com/',
+    'download url' => 'https://fineuploader.com/',
+    'version callback' => 'fileremote_version_callback',
+    'files' => array(
+      'js' => array('fine-uploader.js',
+            'jquery.fine-uploader.js'),
+      'css' => array('fine-uploader-new.css')
+    ),
+  );
+
+  return $libraries;
+}
+
+function fileremote_version_callback()  {
+  // noop for now
+  return TRUE;
+}
