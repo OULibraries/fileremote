@@ -1,11 +1,3 @@
-<!-- Fine Uploader New/Modern CSS file
-====================================================================== -->
-<link href="client/fine-uploader-new.css" rel="stylesheet">
-
-<!-- Fine Uploader JS file
-====================================================================== -->
-<script src="client/fine-uploader.js"></script>
-
 <!-- Fine Uploader Thumbnails template w/ customization
 ====================================================================== -->
 <script type="text/template" id="qq-template-manual-trigger">
@@ -96,28 +88,28 @@
 
 <!-- Fine Uploader DOM Element
 ====================================================================== -->
+
 <div id="fine-uploader-manual-trigger"></div>
 
-<!-- Your code to create an instance of Fine Uploader and bind to the DOM/template
-====================================================================== -->
-<script>
-    var manualUploader = new qq.FineUploader({
-        element: document.getElementById('fine-uploader-manual-trigger'),
-        template: 'qq-template-manual-trigger',
-        request: {
-            endpoint: '/server/uploads'
-        },
-        thumbnails: {
-            placeholders: {
-                waitingPath: '/source/placeholders/waiting-generic.png',
-                notAvailablePath: '/source/placeholders/not_available-generic.png'
-            }
-        },
-        autoUpload: false,
-        debug: true
-    });
 
-    qq(document.getElementById("trigger-upload")).attach("click", function() {
-        manualUploader.uploadStoredFiles();
-    });
+<!-- Your code to create an instance of Fine Uploader and bind to the DOM/template
+ ====================================================================== -->
+
+<script>
+ (function ($) {
+
+     $('#fine-uploader-manual-trigger').fineUploader({
+     template: 'qq-template-manual-trigger',
+     request: {
+       endpoint: '/server/uploads'
+         },
+     autoUpload: false
+     });
+
+  $('#trigger-upload').click(function() {
+    $('#fine-uploader-manual-trigger').fineUploader('uploadStoredFiles');
+     });
+
+ }(jQuery));
+
 </script>
