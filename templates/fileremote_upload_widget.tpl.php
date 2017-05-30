@@ -101,9 +101,13 @@
      $('#fine-uploader-manual-trigger').fineUploader({
      template: 'qq-template-manual-trigger',
      request: {
-       endpoint: '/server/uploads'
+       endpoint: '/fileremote/upload'
          },
-     autoUpload: false
+       autoUpload: false,
+       chunking : {
+           enabled: true,
+           mandatory: true,
+       },
      });
 
   $('#trigger-upload').click(function() {

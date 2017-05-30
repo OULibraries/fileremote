@@ -51,6 +51,8 @@ function fileremote_field_widget_form(&$form, &$form_state, $field, $instance, $
 
   $widget = $element;
 
+  libraries_load('fine-uploader');
+
   $widget['#delta'] = $delta;
   $widget += array(
     '#type' => 'hidden',
