@@ -107,6 +107,7 @@
        chunking : {
            enabled: true,
            mandatory: true,
+           success: { endpoint: "/fileremote/upload?done"}
        },
      });
 
