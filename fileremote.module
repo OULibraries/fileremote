@@ -3,9 +3,7 @@
  * @file
  */
 
-
 require_once dirname(__FILE__) . '/fileremote.field.inc';
-
 
 /**
  * Implementation of hook_theme().
@@ -63,8 +61,6 @@ function fileremote_menu() {
 
 function fileremote_fineuploader_handler() {
 
-
-
   // Include the upload handler class
   require_once "handler.php";
 
@@ -86,7 +82,6 @@ function fileremote_fineuploader_handler() {
 
 
     if ($method == "POST") {
-      header("Content-Type: text/plain");
 
       // Assumes you have a chunking.success.endpoint set to point here with a query parameter of "done".
       // For example: /myserver/handlers/endpoint.php?done
@@ -110,30 +105,24 @@ function fileremote_fineuploader_handler() {
     else {
       header("HTTP/1.0 405 Method Not Allowed");
     }
-
-
     drupal_json_output($result);
-
-
 }
 
+// This will retrieve the "intended" request method.  Normally, this is the
+// actual method of the request.  Sometimes, though, the intended request method
+// must be hidden in the parameters of the request.  For example, when attempting to
+// delete a file using a POST request. In that case, "DELETE" will be sent along with
+// the request in a "_method" parameter.
+function get_request_method() {
+  global $HTTP_RAW_POST_DATA;
 
-
-  // This will retrieve the "intended" request method.  Normally, this is the
-  // actual method of the request.  Sometimes, though, the intended request method
-  // must be hidden in the parameters of the request.  For example, when attempting to
-  // delete a file using a POST request. In that case, "DELETE" will be sent along with
-  // the request in a "_method" parameter.
-  function get_request_method() {
-    global $HTTP_RAW_POST_DATA;
-
-    if(isset($HTTP_RAW_POST_DATA)) {
-      parse_str($HTTP_RAW_POST_DATA, $_POST);
-    }
-
-    if (isset($_POST["_method"]) && $_POST["_method"] != null) {
-      return $_POST["_method"];
-    }
-
-    return $_SERVER["REQUEST_METHOD"];
+  if(isset($HTTP_RAW_POST_DATA)) {
+    parse_str($HTTP_RAW_POST_DATA, $_POST);
   }
+
+  if (isset($_POST["_method"]) && $_POST["_method"] != null) {
+    return $_POST["_method"];
+  }
+
+  return $_SERVER["REQUEST_METHOD"];
+}
