@@ -3,6 +3,11 @@
  * @file
  */
 
+
+// use Kunnu\Dropbox\Dropbox;
+// use Kunnu\Dropbox\DropboxApp;
+// use Kunnu\Dropbox\DropboxFile;
+
 require_once dirname(__FILE__) . '/fileremote.field.inc';
 
 /**
@@ -49,8 +54,18 @@ function fileremote_version_callback()  {
 
 function fileremote_menu() {
   $items = array();
+
+
+  /* Start or continue upload as file chunks */
   $items['fileremote/upload'] = array(
-    'page callback' => 'fileremote_fineuploader_handler',
+    'page callback' => 'fileremote_fineuploader_handler_upload',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  /* Finalize file upload  */
+  $items['fileremote/upload/done'] = array(
+    'page callback' => 'fileremote_fineuploader_handler_done',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
@@ -59,70 +74,104 @@ function fileremote_menu() {
 }
 
 
-function fileremote_fineuploader_handler() {
-
-  // Include the upload handler class
-  require_once "handler.php";
-
-  $uploader = new UploadHandler();
-
-  // Specify the list of valid extensions, ex. array("jpeg", "xml", "bmp")
-  $uploader->allowedExtensions = array(); // all files types allowed by default
-
-  // Specify max file size in bytes.
-  $uploader->sizeLimit = null;
-
-  // Specify the input name set in the javascript.
-  $uploader->inputName = "qqfile"; // matches Fine Uploader's default inputName value by default
-
-  // If you want to use the chunking/resume feature, specify the folder to temporarily save parts.
-  $uploader->chunksFolder = "chunks";
-
-  $method = get_request_method();
-
-
-    if ($method == "POST") {
-
-      // Assumes you have a chunking.success.endpoint set to point here with a query parameter of "done".
-      // For example: /myserver/handlers/endpoint.php?done
-      if (isset($_GET["done"])) {
-        $result = $uploader->combineChunks("/srv/vrfiles/drupal/sites/default/files");
-      }
-      // Handles upload requests
-      else {
-        // Call handleUpload() with the name of the folder, relative to PHP's getcwd()
-        $result = $uploader->handleUpload("/srv/vrfiles/drupal/sites/default/files");
-
-        // To return a name used for uploaded file you can use the following line.
-        $result["uploadName"] = $uploader->getUploadName();
-      }
-
-    }
-  // for delete file requests
-    else if ($method == "DELETE") {
-      $result = $uploader->handleDelete("/srv/vrfiles/drupal/sites/default/files");
-    }
-    else {
-      header("HTTP/1.0 405 Method Not Allowed");
-    }
-    drupal_json_output($result);
+function fileremote_fineuploader_handler_upload() {
+  $result = _fileremote_fineuploader_storeChunk();
+  drupal_json_output($result);
 }
 
-// This will retrieve the "intended" request method.  Normally, this is the
-// actual method of the request.  Sometimes, though, the intended request method
-// must be hidden in the parameters of the request.  For example, when attempting to
-// delete a file using a POST request. In that case, "DELETE" will be sent along with
-// the request in a "_method" parameter.
-function get_request_method() {
-  global $HTTP_RAW_POST_DATA;
+function fileremote_fineuploader_handler_done() {
+  $result = _fileremote_fineuploader_save();
+  drupal_json_output($result);
+}
 
-  if(isset($HTTP_RAW_POST_DATA)) {
-    parse_str($HTTP_RAW_POST_DATA, $_POST);
-  }
 
-  if (isset($_POST["_method"]) && $_POST["_method"] != null) {
-    return $_POST["_method"];
-  }
 
-  return $_SERVER["REQUEST_METHOD"];
+function _fileremote_fineuploader_save() {
+  // $app = new DropboxApp("24mxowlcwov862v", "dwdfyg6dig8qtdl", "55Z3upN4RjEAAAAAAACXYvfTdxysK68hAbl2arxI_yPMyEZzPY5I7jExgFr_xNWi");
+  // $dbx = new Dropbox($app);
+  // $uuid = $_REQUEST["qquuid"];
+  // $filename =  $_REQUEST["qqfilename"];
+  // $totalsize = $_REQUEST["qqtotalfilesize"];
+  // $temp = fopen("php://temp","rw");
+  // $fakeFile = DropboxFile::createByStream("/".$filename, $temp);
+
+
+  // $upload = _fileremote_upload_load($uuid);
+  // if($upload) {
+
+  //   $sessionid = $dbx->finishUploadSession($fakeFile, $upload->sessionid, $totalsize, 0, "/".$filename );
+  //   _fileremote_upload_update( $uuid, $filename, $totalparts, $partindex, $sessionid);
+  // }
+  return array("success" => true );
+}
+
+
+function _fileremote_fineuploader_storechunk() {
+
+  // $app = new DropboxApp("24mxowlcwov862v", "dwdfyg6dig8qtdl", "55Z3upN4RjEAAAAAAACXYvfTdxysK68hAbl2arxI_yPMyEZzPY5I7jExgFr_xNWi");
+  // $dbx = new Dropbox($app);
+
+
+  // $uuid = $_REQUEST["qquuid"];
+  // $filename =  $_REQUEST["qqfilename"];
+  // $totalparts = $_REQUEST["qqtotalparts"];
+  // $partindex = $_REQUEST["partindex"];
+
+
+  // // Save a file chunk to temp stream in prep for write to dropbox This is a bit
+  // // weird, but looks like the easiest way to use our dropbox library
+  // $chunk_path = $_FILES["qqfile"]["tmp_name"];
+  // $chunk_size = filesize($chunk_path);
+  // $chunk = fopen($chunk_path, "r");
+  // $temp = fopen("php://temp","rw");
+  // stream_copy_to_stream( $chunk, $temp);
+  // rewind($temp);
+  // $fakeFile = DropboxFile::createByStream("/".$filename, $temp);
+
+
+  // $upload = _fileremote_upload_load($uuid);
+  // if($upload) {
+
+  //   $sessionid = $dbx->appendUploadSession($fakeFile, $upload->sessionid, 0, $chunk_size);
+  //   _fileremote_upload_update( $uuid, $filename, $totalparts, $partindex, $sessionid);
+  // }
+  // else {
+  //   $sessionid = $dbx->startUploadSession($fakeFile, $chunk_size);
+  //   _fileremote_upload_insert( $uuid, $filename, $totalparts, $partindex, $sessionid);
+  // }
+
+  return array("success" => true );
+}
+
+function _fileremote_upload_load($uuid) {
+  $upload = db_select("fileremote_upload", "upload")
+    ->fields("upload")
+    ->execute()
+    ->fetchObject();
+  return $upload;
+}
+
+function _fileremote_upload_insert($uuid,$filename, $totalparts, $partindex, $sessionid){
+  // Insert a new upload record.
+  $upload = new stdClass();
+  $upload->uuid = $uuid;
+  $upload->filename = $filename;
+  $upload->totalparts = $totalparts;
+  $upload->partindex = $partindex;
+  $upload->sessionid = $sessionid;
+  $upload->timestamp = time();
+  drupal_write_record('fileremote_upload', $upload);
+}
+
+
+function _fileremote_upload_update($uuid,$filename, $totalparts, $partindex, $sessionid){
+  // Insert a new upload record.
+  $upload = new stdClass();
+  $upload->uuid = $uuid;
+  $upload->filename = $filename;
+  $upload->totalparts = $totalparts;
+  $upload->partindex = $partindex;
+  $upload->sessionid = $sessionid;
+  $upload->timestamp = time();
+  drupal_write_record('fileremote_upload', $upload, "uuid");
 }
