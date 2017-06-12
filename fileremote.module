@@ -8,6 +8,7 @@
 // use Kunnu\Dropbox\DropboxApp;
 // use Kunnu\Dropbox\DropboxFile;
 
+
 require_once dirname(__FILE__) . '/fileremote.field.inc';
 
 /**
@@ -87,58 +88,108 @@ function fileremote_fineuploader_handler_done() {
 
 
 function _fileremote_fineuploader_save() {
-  // $app = new DropboxApp("24mxowlcwov862v", "dwdfyg6dig8qtdl", "55Z3upN4RjEAAAAAAACXYvfTdxysK68hAbl2arxI_yPMyEZzPY5I7jExgFr_xNWi");
-  // $dbx = new Dropbox($app);
-  // $uuid = $_REQUEST["qquuid"];
-  // $filename =  $_REQUEST["qqfilename"];
-  // $totalsize = $_REQUEST["qqtotalfilesize"];
-  // $temp = fopen("php://temp","rw");
-  // $fakeFile = DropboxFile::createByStream("/".$filename, $temp);
-
-
-  // $upload = _fileremote_upload_load($uuid);
-  // if($upload) {
-
-  //   $sessionid = $dbx->finishUploadSession($fakeFile, $upload->sessionid, $totalsize, 0, "/".$filename );
-  //   _fileremote_upload_update( $uuid, $filename, $totalparts, $partindex, $sessionid);
-  // }
   return array("success" => true );
 }
 
 
 function _fileremote_fineuploader_storechunk() {
 
-  // $app = new DropboxApp("24mxowlcwov862v", "dwdfyg6dig8qtdl", "55Z3upN4RjEAAAAAAACXYvfTdxysK68hAbl2arxI_yPMyEZzPY5I7jExgFr_xNWi");
-  // $dbx = new Dropbox($app);
+  $uuid = $_REQUEST["qquuid"];
+  $offset = (int)$_REQUEST["qqpartbyteoffset"];
+  $filename =  $_REQUEST["qqfilename"];
+  $totalparts = (int)$_REQUEST["qqtotalparts"];
+  $totalfilesize = (int)$_REQUEST["qqtotalfilesize"];
+  $partindex = (int)$_REQUEST["qqpartindex"];
+  $chunk_path = $_FILES["qqfile"]["tmp_name"];
+  $chunk_size = filesize($chunk_path);
+  $chunk = fopen($chunk_path, "r");
 
 
-  // $uuid = $_REQUEST["qquuid"];
-  // $filename =  $_REQUEST["qqfilename"];
-  // $totalparts = $_REQUEST["qqtotalparts"];
-  // $partindex = $_REQUEST["partindex"];
+  $upload = _fileremote_upload_load($uuid);
 
+  if( $upload and ($partindex == $totalparts-1) ) {
+    watchdog("fileremote", "finishing session");
 
-  // // Save a file chunk to temp stream in prep for write to dropbox This is a bit
-  // // weird, but looks like the easiest way to use our dropbox library
-  // $chunk_path = $_FILES["qqfile"]["tmp_name"];
-  // $chunk_size = filesize($chunk_path);
-  // $chunk = fopen($chunk_path, "r");
-  // $temp = fopen("php://temp","rw");
-  // stream_copy_to_stream( $chunk, $temp);
-  // rewind($temp);
-  // $fakeFile = DropboxFile::createByStream("/".$filename, $temp);
+    /* last chunk of ongoing upload, so finish session */
 
+    $api_args = [
+      "cursor" => [
+        "session_id" =>$upload->sessionid,
+        "offset" => $offset
+      ],
+      "commit" => [
+        "path"=> "/".$filename ,
+        "mode"=> "add",
+        "autorename"=> true,
+        "mute"=> false
+      ]
+    ];
 
-  // $upload = _fileremote_upload_load($uuid);
-  // if($upload) {
+    ddl($api_args);
 
-  //   $sessionid = $dbx->appendUploadSession($fakeFile, $upload->sessionid, 0, $chunk_size);
-  //   _fileremote_upload_update( $uuid, $filename, $totalparts, $partindex, $sessionid);
-  // }
-  // else {
-  //   $sessionid = $dbx->startUploadSession($fakeFile, $chunk_size);
-  //   _fileremote_upload_insert( $uuid, $filename, $totalparts, $partindex, $sessionid);
-  // }
+    $client = new GuzzleHttp\Client();
+    $request = $client->createRequest('POST', 'https://content.dropboxapi.com/2/files/upload_session/finish', ['exceptions'=>false]);
+    $request->setHeader("Authorization", "Bearer 55Z3upN4RjEAAAAAAACX-jUD7ffdp6kVVZAJvqf3krIDYbozcI7Z8niL-sXPjG8E");
+    $request->setHeader("Dropbox-API-Arg", json_encode($api_args));
+    $request->setHeader("Content-Type", "application/octet-stream");
+    $request->setBody(GuzzleHttp\Stream\Stream::factory($chunk));
+
+    $response = $client->send($request);
+
+    $out_headers = $response->getHeaders();
+
+    $msg = json_decode($response->getBody()) ;
+
+    $debug_msg = $response->getBody() ;
+    ddl((string)$debug_msg);
+
+    _fileremote_upload_update( $uuid, $filename, $totalparts, $partindex, $upload->sessionid);
+  } else if($upload and $partindex  < $totalparts-1) {
+    watchdog("fileremote", "continuing  session");
+    $api_args = [
+      "close"=> false,
+      "cursor" => [
+        "session_id" => $upload->sessionid,
+        "offset" => $offset
+      ]
+    ];
+
+    ddl($api_args);
+
+    $client = new GuzzleHttp\Client();
+    $request = $client->createRequest('POST', 'https://content.dropboxapi.com/2/files/upload_session/append_v2', ['exceptions'=>false]);
+    $request->setHeader("Authorization", "Bearer 55Z3upN4RjEAAAAAAACX-jUD7ffdp6kVVZAJvqf3krIDYbozcI7Z8niL-sXPjG8E");
+    $request->setHeader("Dropbox-API-Arg", json_encode($api_args));
+    $request->setHeader("Content-Type", "application/octet-stream");
+    $request->setBody(GuzzleHttp\Stream\Stream::factory($chunk));
+
+    $response = $client->send($request);
+
+    $msg = $response->getBody() ;
+    ddl((string)$msg);
+
+    _fileremote_upload_update( $uuid, $filename, $totalparts, $partindex, $upload->sessionid);
+  } else {
+    /* No ongoing upload, so start session */
+    watchdog("fileremote", "starting session");
+    $api_args = ["close"=> false];
+
+    ddl($api_args);
+
+    $client = new GuzzleHttp\Client();
+    $request = $client->createRequest('POST', 'https://content.dropboxapi.com/2/files/upload_session/start', ['exceptions'=>false]);
+    $request->setHeader("Authorization", "Bearer 55Z3upN4RjEAAAAAAACX-jUD7ffdp6kVVZAJvqf3krIDYbozcI7Z8niL-sXPjG8E");
+    $request->setHeader("Dropbox-API-Arg", json_encode($api_args));
+    $request->setHeader("Content-Type", "application/octet-stream");
+    $request->setBody(GuzzleHttp\Stream\Stream::factory($chunk));
+
+    $response = $client->send($request);
+    $msg = json_decode($response->getBody()) ;
+
+    $sessionid = $msg->session_id;
+    _fileremote_upload_insert( $uuid, $filename, $totalparts, $partindex, $sessionid);
+    ;
+  }
 
   return array("success" => true );
 }
