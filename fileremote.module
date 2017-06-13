@@ -139,13 +139,7 @@ function _fileremote_fineuploader_storechunk() {
     /* Do some error handling ???*/
   }
 
-
-  // Return status array for transmission as JSON
-  if(! isset( $result->error) ) {
-    return  array("success" => true );
-  } else {
-    return $result;
-  }
+  return $result;
 
 }
 

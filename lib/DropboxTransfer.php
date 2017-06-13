@@ -28,9 +28,6 @@ class DropboxTransfer {
     $request->setHeader("Content-Type", "application/octet-stream");
     $request->setBody(GuzzleHttp\Stream\Stream::factory($this->chunk));
 
-    ddl( (string) $request);
-
-
     $result = new stdClass();
 
     try {
@@ -40,10 +37,12 @@ class DropboxTransfer {
 
     }catch (GuzzleHttp\Exception\ClientException $e ) {
       $result->status = $e->getResponse()->getStatusCode();
+      $result->reason = $e->getResponse()->getReasonPhrase();
       $result->error = json_decode(  $e->getResponse()->getBody() );
     }catch(Exception $e) {
       $result->error = $e->getMessage();
     }
+
     ddl($result);
 
     return $result;
