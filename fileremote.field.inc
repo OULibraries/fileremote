@@ -91,3 +91,19 @@ function fileremote_field_formatter_view($entity_type, $entity, $field, $instanc
 
   return $element;
 }
+
+
+/**
+ * Implements hook_field_settings_form().
+ */
+function fileremote_field_settings_form($field, $instance, $has_data) {
+  $settings = $field['settings'];
+
+  $form['bearertoken'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Bearer Token'),
+    '#required' => TRUE,
+  );
+
+  return $form;
+}

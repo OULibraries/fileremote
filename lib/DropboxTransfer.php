@@ -31,19 +31,22 @@ class DropboxTransfer {
     $result = new stdClass();
 
     try {
+      /* Happy Path */
       $response = $this->gzclient->send($request);
       $result->status = $response->getStatusCode();
-      $result->success = json_decode( $response->getBody() );
-
+      $result->info = json_decode( $response->getBody() );
+      $result->success = true;
     }catch (GuzzleHttp\Exception\ClientException $e ) {
+      /* Normal errors */
       $result->status = $e->getResponse()->getStatusCode();
       $result->reason = $e->getResponse()->getReasonPhrase();
-      $result->error = json_decode(  $e->getResponse()->getBody() );
+      $result->success = false;
+      $result->error = json_decode( $e->getResponse()->getBody() );
     }catch(Exception $e) {
+      /* Badness! */
       $result->error = $e->getMessage();
+      $result->success = false;
     }
-
-    ddl($result);
 
     return $result;
   }

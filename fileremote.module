@@ -93,9 +93,10 @@ function _fileremote_fineuploader_save() {
  */
 function _fileremote_fineuploader_storechunk() {
 
-
-  $auth = "55Z3upN4RjEAAAAAAACYGkV0cO9o_yreQ3XR6vFyUkRarDfjb5jnhtZlH5WqqAGy";
-
+  /* get auth token for the file upload field sending us data */
+  $drupal_field = $_REQUEST["drupal_field"];
+  $field_info = field_info_field("field_asdf");
+  $auth = $field_info["settings"]["bearertoken"];
 
   /* Get Fine Uploader file metadata  */
   $uuid = $_REQUEST["qquuid"];
@@ -127,7 +128,7 @@ function _fileremote_fineuploader_storechunk() {
     /* Do first part of new upload and start new session */
     $dbxfer = new DropboxTransfer( $auth, $_REQUEST, NULL, $client, $chunk_path);
     $result = $dbxfer->start();
-    _fileremote_upload_insert( $uuid, $filename, $totalparts, $partindex, $result->success->session_id);
+    _fileremote_upload_insert( $uuid, $filename, $totalparts, $partindex, $result->info->session_id);
   }
   elseif( ! $ongoing_up and $totalparts == 1) {
     /* Do a simple upload, don't bother to get a session */
@@ -138,7 +139,6 @@ function _fileremote_fineuploader_storechunk() {
   else {
     /* Do some error handling ???*/
   }
-
   return $result;
 
 }
@@ -183,5 +183,6 @@ function _fileremote_upload_update($uuid,$filename, $totalparts, $partindex, $se
   $ongoing_up->partindex = $partindex;
   $ongoing_up->sessionid = $sessionid;
   $ongoing_up->timestamp = time();
+  ddl($ongoing_up);
   drupal_write_record('fileremote_upload', $ongoing_up, "uuid");
 }

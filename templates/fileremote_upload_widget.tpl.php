@@ -1,4 +1,7 @@
-<!-- Fine Uploader Thumbnails template w/ customization
+<?php
+$field_name=$variables["element"]["#field_name"];
+
+?><!-- Fine Uploader Thumbnails template w/ customization
 ====================================================================== -->
 <script type="text/template" id="qq-template-manual-trigger">
     <div class="qq-uploader-selector qq-uploader" qq-drop-area-text="Drop files here">
@@ -99,15 +102,16 @@
  (function ($) {
 
      $('#fine-uploader-manual-trigger').fineUploader({
-     template: 'qq-template-manual-trigger',
-     request: {
-       endpoint: '/fileremote/upload'
-         },
+       template: 'qq-template-manual-trigger',
+       request: {
+         endpoint: '/fileremote/upload',
+         params : {drupal_field: "<?php  echo $field_name ?>",},
+       },
        autoUpload: false,
        chunking : {
-           enabled: true,
-           mandatory: true,
-           success: { endpoint: "/fileremote/upload/done"}
+         enabled: true,
+         mandatory: true,
+         success: { endpoint: "/fileremote/upload/done"}
        },
      });
 
