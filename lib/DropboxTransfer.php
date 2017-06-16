@@ -4,11 +4,11 @@
 
 class DropboxTransfer {
 
-  function __construct($auth, $request,  $sessionid, $gzclient, $chunk_path) {
+  function __construct($auth, $request,  $sessionid, $gzclient, $chunk_path, $remote_file) {
     $this->auth = $auth;
     $this->uuid = $request["qquuid"];
     $this->offset = (int)$request["qqpartbyteoffset"];
-    $this->filename =  $request["qqfilename"];
+    $this->remote_file =  $remote_file;
     $this->totalparts = (int)$request["qqtotalparts"];
     $this->totalfilesize = (int)$request["qqtotalfilesize"];
     $this->partindex = (int)$request["qqpartindex"];
@@ -80,7 +80,7 @@ class DropboxTransfer {
         "offset" => $this->offset
       ],
       "commit" => [
-        "path"=> "/".$this->filename ,
+        "path"=> "/".$this->remote_file ,
         "mode"=> "add",
         "autorename"=> true,
         "mute"=> false
@@ -93,7 +93,7 @@ class DropboxTransfer {
 
   function upload() {
     $api_args = [
-      "path"=> "/".$this->filename ,
+      "path"=> "/".$this->remote_file ,
       "mode"=> "add",
       "autorename"=> true,
       "mute"=> false

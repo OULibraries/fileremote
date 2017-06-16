@@ -42,7 +42,7 @@ function fileremote_libraries_info() {
 }
 
 function fileremote_version_callback()  {
-  // noop for now
+  // noop for now, should actually check version
   return TRUE;
 }
 
@@ -97,14 +97,19 @@ function _fileremote_fineuploader_storechunk() {
   $drupal_field = $_REQUEST["drupal_field"];
   $field_info = field_info_field("field_asdf");
   $auth = $field_info["settings"]["bearertoken"];
+  $remote_path = $field_info["settings"]["remote_path"]
+
 
   /* Get Fine Uploader file metadata  */
   $uuid = $_REQUEST["qquuid"];
-  $filename =  $_REQUEST["qqfilename"];
+
+  $filename = $_REQUEST["qqfilename"];
   $totalparts = (int)$_REQUEST["qqtotalparts"];
   $totalfilesize = (int)$_REQUEST["qqtotalfilesize"];
   $partindex = (int)$_REQUEST["qqpartindex"];
   $chunk_path = $_FILES["qqfile"]["tmp_name"];
+
+  $remote_file = "/{$remote_path}/{$filename};
 
   /* Get a Guzzle client to inject */
   $client = new GuzzleHttp\Client();
@@ -114,27 +119,27 @@ function _fileremote_fineuploader_storechunk() {
 
   if( $ongoing_up and ($partindex == $totalparts-1) ) {
     /* Do last part of ongoing upload */
-    $dbxfer = new DropboxTransfer( $auth, $_REQUEST, $ongoing_up->sessionid, $client, $chunk_path);
+    $dbxfer = new DropboxTransfer( $auth, $_REQUEST, $ongoing_up->sessionid, $client, $chunk_path, $remote_file);
     $result = $dbxfer->finish();
-    _fileremote_upload_update( $uuid, $filename, $totalparts, $partindex, $ongoing_up->sessionid);
+    _fileremote_upload_update( $uuid, $remote_file, $totalparts, $partindex, $ongoing_up->sessionid);
   }
   elseif( $ongoing_up and ($partindex  < $totalparts-1) ) {
     /* Do middle part of ongoing upload */
-    $dbxfer = new DropboxTransfer( $auth, $_REQUEST, $ongoing_up->sessionid, $client, $chunk_path);
+    $dbxfer = new DropboxTransfer( $auth, $_REQUEST, $ongoing_up->sessionid, $client, $chunk_path, $remote_file);
     $result = $dbxfer->appendv2();
-    _fileremote_upload_update( $uuid, $filename, $totalparts, $partindex, $ongoing_up->sessionid);
+    _fileremote_upload_update( $uuid, $remote_file, $totalparts, $partindex, $ongoing_up->sessionid);
   }
   elseif( ! $ongoing_up and $totalparts > 1) {
     /* Do first part of new upload and start new session */
-    $dbxfer = new DropboxTransfer( $auth, $_REQUEST, NULL, $client, $chunk_path);
+    $dbxfer = new DropboxTransfer( $auth, $_REQUEST, NULL, $client, $chunk_path, $remote_file);
     $result = $dbxfer->start();
-    _fileremote_upload_insert( $uuid, $filename, $totalparts, $partindex, $result->info->session_id);
+    _fileremote_upload_insert( $uuid, $remote_file, $totalparts, $partindex, $result->info->session_id);
   }
   elseif( ! $ongoing_up and $totalparts == 1) {
     /* Do a simple upload, don't bother to get a session */
-    $dbxfer = new DropboxTransfer( $auth, $_REQUEST, NULL, $client, $chunk_path);
+    $dbxfer = new DropboxTransfer( $auth, $_REQUEST, NULL, $client, $chunk_path, $remote_file);
     $result = $dbxfer->upload();
-    _fileremote_upload_insert( $uuid, $filename, $totalparts, $partindex, NULL);
+    _fileremote_upload_insert( $uuid, $remote_file, $totalparts, $partindex, NULL);
   }
   else {
     /* Do some error handling ???*/
@@ -159,11 +164,11 @@ function _fileremote_upload_load($uuid) {
 /*
  * Record a new upload
  */
-function _fileremote_upload_insert($uuid,$filename, $totalparts, $partindex, $sessionid){
+function _fileremote_upload_insert($uuid,$remote_file, $totalparts, $partindex, $sessionid){
   // Insert a new upload record.
   $ongoing_up = new stdClass();
   $ongoing_up->uuid = $uuid;
-  $ongoing_up->filename = $filename;
+  $ongoing_up->remote_file = $remote_file;
   $ongoing_up->totalparts = $totalparts;
   $ongoing_up->partindex = $partindex;
   $ongoing_up->sessionid = $sessionid;
@@ -175,10 +180,10 @@ function _fileremote_upload_insert($uuid,$filename, $totalparts, $partindex, $se
 /*
  * Update an existing upload record
  */
-function _fileremote_upload_update($uuid,$filename, $totalparts, $partindex, $sessionid){
+function _fileremote_upload_update($uuid,$remote_file, $totalparts, $partindex, $sessionid){
   $ongoing_up = new stdClass();
   $ongoing_up->uuid = $uuid;
-  $ongoing_up->filename = $filename;
+  $ongoing_up->remote_file = $remote_file;
   $ongoing_up->totalparts = $totalparts;
   $ongoing_up->partindex = $partindex;
   $ongoing_up->sessionid = $sessionid;
