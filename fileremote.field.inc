@@ -105,5 +105,10 @@ function fileremote_field_settings_form($field, $instance, $has_data) {
     '#required' => TRUE,
   );
 
+  $form['remotepath'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Remote Path'),
+  );
+
   return $form;
 }
