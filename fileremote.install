@@ -41,9 +41,9 @@ function fileremote_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'filename' => array(
+      'remote_file' => array(
         'type' => 'varchar',
-        'length' => 255,
+        'length' => 4096,
         'not null' => TRUE,
         'default' => '',
       ),
