@@ -96,8 +96,10 @@ function _fileremote_fineuploader_storechunk() {
   /* get auth token for the file upload field sending us data */
   $drupal_field = $_REQUEST["drupal_field"];
   $field_info = field_info_field("field_asdf");
+
+  /* required fields */
   $auth = $field_info["settings"]["bearertoken"];
-  $remote_path = $field_info["settings"]["remote_path"];
+  $remote_path = $field_info["settings"]["remotepath"];
 
 
   /* Get Fine Uploader file metadata  */
@@ -109,7 +111,7 @@ function _fileremote_fineuploader_storechunk() {
   $partindex = (int)$_REQUEST["qqpartindex"];
   $chunk_path = $_FILES["qqfile"]["tmp_name"];
 
-  $remote_file = "/{$remote_path}/{$filename}";
+  $remote_file = "{$remote_path}/{$filename}";
 
   /* Get a Guzzle client to inject */
   $client = new GuzzleHttp\Client();
