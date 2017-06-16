@@ -97,7 +97,7 @@ function _fileremote_fineuploader_storechunk() {
   $drupal_field = $_REQUEST["drupal_field"];
   $field_info = field_info_field("field_asdf");
   $auth = $field_info["settings"]["bearertoken"];
-  $remote_path = $field_info["settings"]["remote_path"]
+  $remote_path = $field_info["settings"]["remote_path"];
 
 
   /* Get Fine Uploader file metadata  */
