@@ -103,11 +103,15 @@ function fileremote_field_settings_form($field, $instance, $has_data) {
     '#type' => 'textfield',
     '#title' => t('Bearer Token'),
     '#required' => TRUE,
+    '#default_value' => $settings['bearertoken'],
+
   );
 
   $form['remotepath'] = array(
     '#type' => 'textfield',
     '#title' => t('Remote Path'),
+    '#required' => TRUE,
+    '#default_value' => $settings['remotepath'],
   );
 
   return $form;
