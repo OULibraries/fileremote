@@ -109,7 +109,7 @@ function _fileremote_fineuploader_storechunk() {
   $partindex = (int)$_REQUEST["qqpartindex"];
   $chunk_path = $_FILES["qqfile"]["tmp_name"];
 
-  $remote_file = "/{$remote_path}/{$filename};
+  $remote_file = "/{$remote_path}/{$filename}";
 
   /* Get a Guzzle client to inject */
   $client = new GuzzleHttp\Client();
