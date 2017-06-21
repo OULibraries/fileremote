@@ -13,13 +13,13 @@ function fileremote_field_schema($field) {
 
 
   $columns = array(
-    'filename' => array(
+    'upload_id' => array(
       'type' => 'varchar',
-      'length' => 1024,
+      'length' => 255,
       'not null' => FALSE),
   );
   $indexes = array(
-    'filename' => array('filename'),
+    'upload_id' => array('upload_id'),
   );
 
 
