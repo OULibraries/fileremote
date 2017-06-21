@@ -1,5 +1,4 @@
 <?php
-$field_name=$variables["element"]["#field_name"];
 
 ?><!-- Fine Uploader Thumbnails template w/ customization
 ====================================================================== -->
@@ -105,7 +104,10 @@ $field_name=$variables["element"]["#field_name"];
        template: 'qq-template-manual-trigger',
        request: {
          endpoint: '/fileremote/upload',
-         params : {drupal_field: "<?php  echo $field_name ?>",},
+         params : {
+             drupal_field: Drupal.settings.fileremote.field,
+             upload_id: Drupal.settings.fileremote.upload_id
+         },
        },
        autoUpload: false,
        chunking : {
