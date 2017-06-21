@@ -24,7 +24,7 @@ function fileremote_field_info() {
  * Implements hook_field_is_empty().
  */
 function fileremote_field_is_empty($item, $field) {
-  return empty($item['filename']);
+  return empty($item['upload_id']);
 }
 
 
@@ -47,23 +47,40 @@ function fileremote_field_widget_info() {
 
 function fileremote_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-  $value = isset($items[$delta]['filename']) ? $items[$delta]['filename'] : '';
 
-  $widget = $element;
 
+  // Generate or retrieve Upload ID value
+  $value = isset($items[$delta]['upload_id']) ? $items[$delta]['upload_id'] : _fileremote_newid();
+
+
+  // Add the fine-uploader library and set some variables
+  $my_settings = array(
+    'upload_id' => $value,
+    'field' =>$element['#field_name']
+  );
+  drupal_add_js(array('fileremote' => $my_settings), 'setting');
   libraries_load('fine-uploader');
 
+  // Upload ID Field
+  $widget = $element;
   $widget['#delta'] = $delta;
   $widget += array(
     '#type' => 'hidden',
+    '#default_value' =>$value,
+  );
+  $element['upload_id'] = $widget;
+
+  // Fine  Uploader Markup
+  $widgetFU = $element;
+  $widgetFU['#delta'] = $delta;
+  $widgetFU += array(
+    '#type' => 'markup',
     '#prefix' => '<div class="FILEREMOTE-WRAPPER"> <h1>FILE REMOTE PREFIX</h1>',
     '#suffix' => '</div> <h1>FILE REMOTE SUFFIX</h1>',
     '#theme' => 'fileremote',
   );
+  $element['fileremote_fineupload'] = $widgetFU;
 
-
-
-  $element['filename'] = $widget;
   return $element;
 }
 
