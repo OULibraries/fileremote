@@ -93,14 +93,21 @@ function _fileremote_fineuploader_save() {
  */
 function _fileremote_fineuploader_storechunk() {
 
+  $result = array();
+
   /* get auth token for the file upload field sending us data */
   $drupal_field = $_REQUEST["drupal_field"];
-  $field_info = field_info_field("field_asdf");
+  $field_info = field_info_field($drupal_field);
+
+  if( is_null($field_info) ) {
+    return array("error"=>"Settings misconfigured");
+  }
+
+  $upid = $_REQUEST["upload_id"];
 
   /* required fields */
   $auth = $field_info["settings"]["bearertoken"];
   $remote_path = $field_info["settings"]["remotepath"];
-
 
   /* Get Fine Uploader file metadata  */
   $uuid = $_REQUEST["qquuid"];
@@ -111,7 +118,7 @@ function _fileremote_fineuploader_storechunk() {
   $partindex = (int)$_REQUEST["qqpartindex"];
   $chunk_path = $_FILES["qqfile"]["tmp_name"];
 
-  $remote_file = "{$remote_path}/{$filename}";
+  $remote_file = "{$remote_path}/{$upid}/{$filename}";
 
   /* Get a Guzzle client to inject */
   $client = new GuzzleHttp\Client();
@@ -190,6 +197,14 @@ function _fileremote_upload_update($uuid,$remote_file, $totalparts, $partindex, 
   $ongoing_up->partindex = $partindex;
   $ongoing_up->sessionid = $sessionid;
   $ongoing_up->timestamp = time();
-  ddl($ongoing_up);
   drupal_write_record('fileremote_upload', $ongoing_up, "uuid");
+}
+
+
+/*
+ *
+ */
+function _fileremote_newid() {
+  $uuid = Ramsey\Uuid\Uuid::uuid4();
+  return $uuid->toString();
 }
