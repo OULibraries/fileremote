@@ -35,8 +35,12 @@ function fileremote_field_is_empty($item, $field) {
 function fileremote_field_widget_info() {
   return array(
     'fileremote_upload' => array(
-      'label' => t('Test field widget'),
+      'label' => t('Fileremote Uploader Widget'),
       'field types' => array('fileremote_upload'),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_NONE
+      ),
     ),
   );
 }
@@ -116,19 +120,23 @@ function fileremote_field_formatter_view($entity_type, $entity, $field, $instanc
 function fileremote_field_settings_form($field, $instance, $has_data) {
   $settings = $field['settings'];
 
+  $my_token = isset($settings['bearertoken']) ? $settings['bearertoken'] : "";
+
   $form['bearertoken'] = array(
     '#type' => 'textfield',
     '#title' => t('Bearer Token'),
     '#required' => TRUE,
-    '#default_value' => $settings['bearertoken'],
+    '#default_value' => $my_token,
 
   );
+
+  $my_path = isset($settings['remotepath']) ? $settings['remotepath'] : "";
 
   $form['remotepath'] = array(
     '#type' => 'textfield',
     '#title' => t('Remote Path'),
     '#required' => TRUE,
-    '#default_value' => $settings['remotepath'],
+    '#default_value' => $my_path,
   );
 
   return $form;
