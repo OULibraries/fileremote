@@ -2,4 +2,8 @@ name = FileRemote
 description = Remote Files (Dropbox)
 package = Fields
 core = 7.x
-dependencies[] = 'libraries'
+; require drupal 7.40 for namespace dependencies
+dependencies[] = drupal:system (>= 7.40)
+; other dependencies
+dependencies[] = jquery_update:jquery_update
+dependencies[] = libraries:libraries
