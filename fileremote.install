@@ -1,17 +1,11 @@
 <?php
-/**
- * @file
- */
-
 
 /**
- * Implements hook_field_schema
- *
+ * Implements hook_field_schema()
  */
-
 function fileremote_field_schema($field) {
 
-
+  // Fileremote field
   $columns = array(
     'upload_id' => array(
       'type' => 'varchar',
@@ -30,9 +24,12 @@ function fileremote_field_schema($field) {
   return $schema;
 }
 
-
-
+/**
+ *Implements hook_schema()
+ */
 function fileremote_schema() {
+
+  // Upload tracking data
   $schema['fileremote_upload'] = array(
     'fields' => array(
       'uuid' => array(
