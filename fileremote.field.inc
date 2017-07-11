@@ -1,11 +1,11 @@
 <?php
+
 /**
- * @file
- *
+ * Implenments hook_field_info()
  */
 function fileremote_field_info() {
+  // Define a single field type
   return array(
-    // We name our field as the associative name of the array.
     'fileremote_upload' => array(
       'label' => t('Remote File (Dropbox)'),
       'description' => t('Remote file field.'),
@@ -15,31 +15,27 @@ function fileremote_field_info() {
   );
 }
 
-
-/**
- * TBD Implements hook_field_validate().
- */
-
 /**
  * Implements hook_field_is_empty().
  */
 function fileremote_field_is_empty($item, $field) {
+  // right now, we're simply storing an id to match with a folder at Dropbox
   return empty($item['upload_id']);
 }
-
 
 
 /**
  * Implements hook_field_widget_info().
  */
 function fileremote_field_widget_info() {
+  // Define a edit widget
   return array(
     'fileremote_upload' => array(
       'label' => t('Fileremote Uploader Widget'),
       'field types' => array('fileremote_upload'),
       'behaviors' => array(
         'multiple values' => FIELD_BEHAVIOR_DEFAULT,
-        'default value' => FIELD_BEHAVIOR_NONE
+        'default value' => FIELD_BEHAVIOR_NONE  /* No field instance default values */
       ),
     ),
   );
@@ -48,14 +44,10 @@ function fileremote_field_widget_info() {
 /**
  * Implements hook_field_widget_form().
  */
-
 function fileremote_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-
-
 
   // Generate or retrieve Upload ID value
   $value = isset($items[$delta]['upload_id']) ? $items[$delta]['upload_id'] : _fileremote_newid();
-
 
   // Add the fine-uploader library and set some variables
   $my_settings = array(
@@ -79,8 +71,6 @@ function fileremote_field_widget_form(&$form, &$form_state, $field, $instance, $
   $widgetFU['#delta'] = $delta;
   $widgetFU += array(
     '#type' => 'markup',
-    '#prefix' => '<div class="FILEREMOTE-WRAPPER"> <h1>FILE REMOTE PREFIX</h1>',
-    '#suffix' => '</div> <h1>FILE REMOTE SUFFIX</h1>',
     '#theme' => 'fileremote',
   );
   $element['fileremote_fineupload'] = $widgetFU;
@@ -106,10 +96,12 @@ function fileremote_field_formatter_info() {
  * Implements hook_field_formatter_view().
  */
 function fileremote_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  /* Allow for display of multiple item ids. Same complexity, and it might be a
+   * thing some day. */
   $element = array();
-
-  /* Formatter TBD */
-
+  foreach( $items as $delta => $item ) {
+    $element[$delta] = array('#markup' => strip_tags($item['upload_id']));
+  }
   return $element;
 }
 
