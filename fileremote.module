@@ -1,7 +1,4 @@
 <?php
-/**
- * @file
- */
 
 require_once dirname(__FILE__) . '/fileremote.field.inc';
 require_once dirname(__FILE__) . '/lib/DropboxTransfer.php';
@@ -41,15 +38,22 @@ function fileremote_libraries_info() {
   return $libraries;
 }
 
+/**
+ * Version check for libraries.
+ */
+
 function fileremote_version_callback()  {
-  // noop for now, should actually check version
+  // NOOP for now, should actually check version
   return TRUE;
 }
 
-
+/**
+ * Implements hook_menu()
+ */
 function fileremote_menu() {
   $items = array();
 
+  /* Required endpoints for the Fine Uploader traditional backend.
 
   /* Start or continue upload as file chunks */
   $items['fileremote/upload'] = array(
@@ -73,7 +77,6 @@ function fileremote_fineuploader_handler_upload() {
   $result = _fileremote_fineuploader_storeChunk();
   drupal_json_output($result);
 }
-
 function fileremote_fineuploader_handler_done() {
   $result = _fileremote_fineuploader_save();
   drupal_json_output($result);
@@ -81,15 +84,15 @@ function fileremote_fineuploader_handler_done() {
 
 
 /**
- * Rus on completed file transfer to finalize metadata, etc.
+ * Runs on completed file transfer to finalize metadata, etc.
  */
-
 function _fileremote_fineuploader_save() {
+  /* Currently NOOP */
   return array();
 }
 
 /**
- * Implements chunked file transfer to dropbox.
+ * File transfer to dropbox.
  */
 function _fileremote_fineuploader_storechunk() {
 
@@ -126,20 +129,21 @@ function _fileremote_fineuploader_storechunk() {
   /* Have we started work on this upload ? */
   $ongoing_up = _fileremote_upload_load($uuid);
 
+  /* Chunked or simple upload to Dropbox */
   if( $ongoing_up and ($partindex == $totalparts-1) ) {
-    /* Do last part of ongoing upload */
+    /* Do last part of ongoing chunked upload */
     $dbxfer = new DropboxTransfer( $auth, $_REQUEST, $ongoing_up->sessionid, $client, $chunk_path, $remote_file);
     $result = $dbxfer->finish();
     _fileremote_upload_update( $uuid, $remote_file, $totalparts, $partindex, $ongoing_up->sessionid);
   }
   elseif( $ongoing_up and ($partindex  < $totalparts-1) ) {
-    /* Do middle part of ongoing upload */
+    /* Do middle part of ongoing chunked upload */
     $dbxfer = new DropboxTransfer( $auth, $_REQUEST, $ongoing_up->sessionid, $client, $chunk_path, $remote_file);
     $result = $dbxfer->appendv2();
     _fileremote_upload_update( $uuid, $remote_file, $totalparts, $partindex, $ongoing_up->sessionid);
   }
   elseif( ! $ongoing_up and $totalparts > 1) {
-    /* Do first part of new upload and start new session */
+    /* Do first part of new chunked upload and start new session */
     $dbxfer = new DropboxTransfer( $auth, $_REQUEST, NULL, $client, $chunk_path, $remote_file);
     $result = $dbxfer->start();
     _fileremote_upload_insert( $uuid, $remote_file, $totalparts, $partindex, $result->info->session_id);
@@ -202,7 +206,7 @@ function _fileremote_upload_update($uuid,$remote_file, $totalparts, $partindex, 
 
 
 /*
- *
+ * Gennerate a new identifier.
  */
 function _fileremote_newid() {
   $uuid = Ramsey\Uuid\Uuid::uuid4();
